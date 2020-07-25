@@ -5,7 +5,7 @@ import json
 import operator
 
 
-# Dataset
+# Data set
 summoner_spell = {
     1: '정화',
     3: '탈진',
@@ -466,7 +466,7 @@ rune = {
 # API key
 # This api key will not be opened publicly followed by the policies of Riot Games, Inc.
 # In code the key has been used correctly.
-API_KEY = 'RGAPI-b6bea141-435b-40f9-908d-7e3595126c98'
+API_KEY = ''
 
 # Number of recent matches (Default: 20)
 MATCHES = 20
