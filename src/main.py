@@ -465,7 +465,7 @@ rune = {
 
 # API key
 # This api key will not be opened publicly followed by the policies of Riot Games, Inc.
-# In code the key has been used correctly.
+# In real code the key is used correctly.
 API_KEY = ''
 
 # Number of recent matches (Default: 20)
@@ -526,31 +526,35 @@ league_win_rate = league_win / league_game * 100
 matchlist_api = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/' + account_id + '?queue=420&api_key=' + API_KEY
 recent_match = requests.get(matchlist_api).json()['matches']
 
-# for begin_idx in range(league_game // 100 + 1):
-#     for idx in range(begin_idx * 100, begin_idx * 100 + 100):
-#         if idx >= league_game:
-#             break
-#         else:
-#             matchlist_api = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/' + account_id + '?queue=420&beginIndex=' + str(begin_idx) + '&api_key=' + API_KEY
-#             matchlist = requests.get(matchlist_api).json()['matches']
-#             league_match_id.append(matchlist[idx]['gameId'])
+count = 0
+for begin_idx in range(league_game // 100 + 1):
+    matchlist_api = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/' + account_id + '?queue=420&beginIndex=' + str(begin_idx) + '&api_key=' + API_KEY
+    matchlist = requests.get(matchlist_api).json()['matches']
+    for idx in range(100):
+        if count >= league_game:
+            break
+        else:
+            league_match_id.append(matchlist[idx]['gameId'])
+            league_match_champion.append(matchlist[idx]['champion'])
+            count += 1
 
-# recent_match_id = league_match_id[:20]
+recent_match_id = league_match_id[:20]
+recent_match_champion = league_match_champion[:20]
 
 # Check whether the match is solo rank
-count = 0
-for idx in range(len(recent_match)):
-    game_id = recent_match[idx]['gameId']
-    match_api = 'https://kr.api.riotgames.com/lol/match/v4/matches/' + str(game_id) + '?api_key=' + API_KEY
-    match = requests.get(match_api).json()
-    game_duration = match['gameDuration']
-    if game_duration > 300:
-        recent_match_id.append(recent_match[idx]['gameId'])
-        recent_match_champion.append(recent_match[idx]['champion'])
-        count += 1
+# count = 0
+# for idx in range(len(recent_match)):
+#     game_id = recent_match[idx]['gameId']
+#     match_api = 'https://kr.api.riotgames.com/lol/match/v4/matches/' + str(game_id) + '?api_key=' + API_KEY
+#     match = requests.get(match_api).json()
+#     game_duration = match['gameDuration']
+#     if game_duration > 300:
+#         recent_match_id.append(recent_match[idx]['gameId'])
+#         recent_match_champion.append(recent_match[idx]['champion'])
+#         count += 1
     
-    if count == MATCHES:
-        break
+#     if count == MATCHES:
+#         break
 
 for match_idx in range(MATCHES):
     match_api = 'https://kr.api.riotgames.com/lol/match/v4/matches/' + str(recent_match_id[match_idx]) + '?api_key=' + API_KEY
