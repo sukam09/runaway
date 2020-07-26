@@ -464,9 +464,8 @@ rune = {
 }
 
 # API key
-# This api key will not be opened publicly followed by the policies of Riot Games, Inc.
-# In real code the key is used correctly.
-API_KEY = ''
+api_key_file = open('C:/Users/sukam/Desktop/api_key.txt', 'r')
+API_KEY = api_key_file.read()
 
 # Number of recent matches (Default: 20)
 MATCHES = 20
@@ -538,10 +537,11 @@ for begin_idx in range(league_game // 100 + 1):
             league_match_champion.append(matchlist[idx]['champion'])
             count += 1
 
+# Copy league match data to recent match data
 recent_match_id = league_match_id[:20]
 recent_match_champion = league_match_champion[:20]
 
-# Check whether the match is solo rank
+# Check whether the match is solo rank (Deprecated)
 # count = 0
 # for idx in range(len(recent_match)):
 #     game_id = recent_match[idx]['gameId']
@@ -748,9 +748,9 @@ for idx in range(len(recent_match_champion)):
 
 recent_match_champion_sorted = sorted(recent_match_champion_checker.items(), key=operator.itemgetter(1), reverse=True)
 
-print('\n======================')
-print('최근에 플레이한 챔피언')
-print('======================')
+print('\n====================')
+print('최근 플레이한 챔피언')
+print('====================')
 
 for item in recent_match_champion_sorted:
     game = item[1][0]
