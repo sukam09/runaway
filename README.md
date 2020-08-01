@@ -7,3 +7,5 @@ This project is for deciding whether Elo of target player was boosted or not. Fi
 -The player has won the game a lot with the champions not used frequently.
 
 The APIs we are using are: summoner, match, and league. We will maybe have a website too.
+
+ⓒ 2020 Seungwon Lee. All rights reversed.
