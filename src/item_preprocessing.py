@@ -4,7 +4,7 @@ from tqdm import tqdm
 import json
 
 
-with open('../item.json', 'r') as item_data:
+with open('../tools/item.json', 'r') as item_data:
     item = json.load(item_data)
 
 item_key = list(item['data'].keys())

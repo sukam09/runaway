@@ -2,14 +2,15 @@ import pandas as pd
 import requests
 from tqdm import tqdm
 import json
-import operator
+from operator import itemgetter
 import time
+import csv
 
 from data_set import summoner_spell, champion, item, rune
 
 
 # API key
-api_key_file = open('C:/Users/sukam/Desktop/api_key.txt', 'r')
+api_key_file = open('../api_key.txt', 'r')
 API_KEY = api_key_file.read()
 
 # Number of recent matches (Default: 20)
@@ -19,12 +20,7 @@ SEASON = 2020
 print('\nLeague of Legends AI Reporting System')
 print('(c) 2020 Seungwon Lee. All rights reserved.')
 
-# Default
-# summoner_name = input('\n소환사명을 입력하십시오: ')
-
-# For test
-summoner_name = 'Hidden Rough'
-print('\n소환사명을 입력하십시오: %s' % summoner_name)
+summoner_name = input('\n소환사명을 입력하십시오: ')
 
 # League match data structure
 league_match_id = []
@@ -42,6 +38,7 @@ summoner_id = summoner['id']
 league_api = 'https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/' + summoner_id + '?api_key=' + API_KEY
 league = requests.get(league_api).json()
 
+# Calculate league game statistics
 if len(league) == 1:
     league_win = league[0]['wins']
     league_loss = league[0]['losses']
@@ -56,23 +53,22 @@ else:
 league_game = league_win + league_loss
 league_win_rate = league_win / league_game * 100
 
+# Count played champions
 count = 0
 
-for begin_idx in range(league_game // 100 + 1):
+for match_idx in range(league_game // 100 + 1):
+    begin_idx = 100 * match_idx
     matchlist_api = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/' + account_id + '?queue=420&beginIndex=' + str(begin_idx) + '&api_key=' + API_KEY
     matchlist = requests.get(matchlist_api).json()['matches']
-    for idx in range(100):
+    for matchlist_idx in range(100):
         if count >= league_game:
             break
         else:
-            league_match_id.append(matchlist[idx]['gameId'])
-            league_match_champion.append(matchlist[idx]['champion'])
+            league_match_id.append(matchlist[matchlist_idx]['gameId'])
+            league_match_champion.append(matchlist[matchlist_idx]['champion'])
             count += 1
 
-# Copy to recent matches
-recent_match_id = league_match_id[:MATCHES]
-recent_match_champion = league_match_champion[:MATCHES]
-
+# Generate league match data set
 for match_idx in range(league_game):
     match_api = 'https://kr.api.riotgames.com/lol/match/v4/matches/' + str(league_match_id[match_idx]) + '?api_key=' + API_KEY
     match = requests.get(match_api).json()
@@ -81,13 +77,12 @@ for match_idx in range(league_game):
         game_duration = match['gameDuration']
         match_team_info = match['participants']
     except KeyError:
-        print('\nRate limit exceeded...\n')
         time.sleep(120)
         match = requests.get(match_api).json()
         game_duration = match['gameDuration']
         match_team_info = match['participants']
 
-    # Check whether player's team is blue or red
+    # Check player's team
     for participant_idx in range(10):
         if match_team_info[participant_idx]['championId'] == league_match_champion[match_idx]:
             match_info = match_team_info[participant_idx]
@@ -198,6 +193,7 @@ for match_idx in range(league_game):
 recent_match_info = league_match_info[:MATCHES]
 recent_match_data = league_match_data[:MATCHES]
 recent_match_win = league_match_win[:MATCHES]
+recent_match_champion = league_match_champion[:MATCHES]
 
 league_match_info_df = pd.DataFrame(league_match_info,
     columns=[
@@ -294,20 +290,30 @@ recent_match_data_df = pd.DataFrame(recent_match_data,
 )
 
 # Save to csv files
-league_match_info_df.to_csv('league_match_info.csv')
-league_match_data_df.to_csv('league_match_data.csv')
+league_match_info_df.to_csv('./data/league_match_info.csv')
+league_match_data_df.to_csv('./data/league_match_data.csv')
+recent_match_info_df.to_csv('./data/recent_match_info.csv')
+recent_match_data_df.to_csv('./data/recent_match_data.csv')
 
-recent_match_info_df.to_csv('recent_match_info.csv')
-recent_match_data_df.to_csv('recent_match_data.csv')
+# Count league match champions
+league_match_champion_checker = {}
 
-print('\n===========================')
-print('%s시즌 개인/2인 랭크 게임' % SEASON)
-print('===========================')
-print('총 %s게임 %s승 %s패 승률 %.0f%%' % (league_game, league_win, league_loss, league_win_rate))
-# print('\n==================================')
-# print('%s시즌 가장 많이 플레이한 챔피언' % SEASON)
-# print('==================================')
+for idx in range(len(league_match_champion)):
+    if league_match_champion[idx] in league_match_champion_checker:
+        league_match_champion_checker[league_match_champion[idx]][0] += 1
+        if league_match_win[idx] == 1:
+            league_match_champion_checker[league_match_champion[idx]][1] += 1
+        else:
+            league_match_champion_checker[league_match_champion[idx]][2] += 1
+    else:
+        if league_match_win[idx] == 1:
+            league_match_champion_checker[league_match_champion[idx]] = [1, 1, 0]
+        else:
+            league_match_champion_checker[league_match_champion[idx]] = [1, 0, 1]
 
+league_match_champion_sorted = sorted(league_match_champion_checker.items(), key=itemgetter(1), reverse=True)
+
+# Count recent match champions
 recent_match_champion_checker = {}
 
 for idx in range(len(recent_match_champion)):
@@ -324,19 +330,39 @@ for idx in range(len(recent_match_champion)):
         else:
             recent_match_champion_checker[recent_match_champion[idx]][2] += 1
 
-recent_match_champion_sorted = sorted(recent_match_champion_checker.items(), key=operator.itemgetter(1), reverse=True)
+recent_match_champion_sorted = sorted(recent_match_champion_checker.items(), key=itemgetter(1), reverse=True)
 
-print('\n====================')
-print('최근 플레이한 챔피언')
-print('====================')
+# Results
+print('\n===================================')
+print('개인/2인 랭크 게임(%s시즌 전체)' % SEASON)
+print('===================================')
+print('총 %s게임 %s승 %s패 승률 %.0f%%' % (league_game, league_win, league_loss, league_win_rate))
+print('-----------------------------------')
+
+for item in league_match_champion_sorted:
+    game = item[1][0]
+    win = item[1][1]
+    loss = item[1][2]
+    win_rate = win / game * 100
+    print('%s %d게임 %d승 %d패 승률 %.0f%% ' % (champion[item[0]], game, win, loss, win_rate))
+
+game = len(recent_match_win)
+win = recent_match_win.count(1)
+loss = recent_match_win.count(0)
+win_rate = win / game * 100
+
+print('\n===================================')
+print('개인/2인 랭크 게임(최근 %s게임)' % MATCHES)
+print('===================================')
+print('총 %s게임 %s승 %s패 승률 %.0f%%' % (game, win, loss, win_rate))
+print('-----------------------------------')
 
 for item in recent_match_champion_sorted:
     game = item[1][0]
     win = item[1][1]
     loss = item[1][2]
     win_rate = win / game * 100
-    print('%s %d게임 승률 %.0f%% %d승 %d패' % (champion[item[0]], game, win_rate, win, loss))
+    print('%s %d게임 %d승 %d패 승률 %.0f%%' % (champion[item[0]], game, win, loss, win_rate))
 
-print('\n============================')
-print('최근 %s회 개인/2인 랭크 게임' % MATCHES)
-print('============================\n%s' % recent_match_info_df)
+print('-----------------------------------')
+print('\n%s' % recent_match_info_df)
