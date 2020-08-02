@@ -32,13 +32,14 @@ league_match_data = []
 
 summoner_api = 'https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + summoner_name + '?api_key=' + API_KEY
 summoner = requests.get(summoner_api).json()
+
 account_id = summoner['accountId']
 summoner_id = summoner['id']
 
 league_api = 'https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/' + summoner_id + '?api_key=' + API_KEY
 league = requests.get(league_api).json()
 
-# Calculate league game statistics
+# Calculate solo rank games, wins, losses, win rate
 if len(league) == 1:
     league_win = league[0]['wins']
     league_loss = league[0]['losses']
@@ -134,14 +135,19 @@ for match_idx in range(league_game):
     death = int(stat['deaths'])
     assist = int(stat['assists'])
 
+    league_match_info_row.append('%d/%d/%d' % (kill, death, assist))
+    league_match_data_row.append(kill)
+    league_match_data_row.append(death)
+    league_match_data_row.append(assist)
+
     if death == 0:
         kda = (kill + assist) * 1.2
+        league_match_info_row.append('Perfect')
+        league_match_data_row.append('%.2f' % kda)
     else:
         kda = (kill + assist) / death
-
-    league_match_info_row.append('%d/%d/%d' % (kill, death, assist))
-    league_match_info_row.append('%.2f' % kda)
-    league_match_data_row.append('%.2f' % kda)
+        league_match_info_row.append('%.2f' % kda)
+        league_match_data_row.append('%.2f' % kda)
     
     # Level and CS
     level = int(stat['champLevel'])
@@ -228,6 +234,9 @@ league_match_data_df = pd.DataFrame(league_match_data,
         'spell2',
         'rune1',
         'rune2',
+        'kill',
+        'death',
+        'assist',
         'kda',
         'lv',
         'cs',
@@ -275,6 +284,9 @@ recent_match_data_df = pd.DataFrame(recent_match_data,
         'spell2',
         'rune1',
         'rune2',
+        'kill',
+        'death',
+        'assist',
         'kda',
         'lv',
         'cs',
@@ -365,4 +377,4 @@ for item in recent_match_champion_sorted:
     print('%s %d게임 %d승 %d패 승률 %.0f%%' % (champion[item[0]], game, win, loss, win_rate))
 
 print('-----------------------------------')
-print('\n%s' % recent_match_info_df)
+print('%s' % recent_match_info_df)
