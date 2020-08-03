@@ -8,8 +8,6 @@ import time
 from data_set import summoner_spell, champion, item, rune
 
 
-def 
-
 # API key
 api_key_file = open('../api_key.txt', 'r')
 API_KEY = api_key_file.read()
