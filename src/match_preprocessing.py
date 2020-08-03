@@ -4,10 +4,11 @@ from tqdm import tqdm
 import json
 from operator import itemgetter
 import time
-import csv
 
 from data_set import summoner_spell, champion, item, rune
 
+
+def 
 
 # API key
 api_key_file = open('../api_key.txt', 'r')
@@ -21,6 +22,7 @@ print('\nLeague of Legends AI Reporting System')
 print('(c) 2020 Seungwon Lee. All rights reserved.')
 
 summoner_name = input('\n소환사명을 입력하십시오: ')
+print()
 
 # League match data structure
 league_match_id = []
@@ -32,6 +34,16 @@ league_match_data = []
 
 summoner_api = 'https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + summoner_name + '?api_key=' + API_KEY
 summoner = requests.get(summoner_api).json()
+
+try:
+    account_id = summoner['accountId']
+    summoner_Id = summoner['id']
+except KeyError:
+    print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+    time.sleep(120)
+    summoner = requests.get(summoner_api).json()
+    account_id = summoner['accountId']
+    summoner_Id = summoner['id']
 
 account_id = summoner['accountId']
 summoner_id = summoner['id']
@@ -57,7 +69,7 @@ league_win_rate = league_win / league_game * 100
 # Count played champions
 count = 0
 
-for match_idx in range(league_game // 100 + 1):
+for match_idx in tqdm(range(league_game // 100 + 1), desc='플레이한 챔피언 집계중...'):
     begin_idx = 100 * match_idx
     matchlist_api = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/' + account_id + '?queue=420&beginIndex=' + str(begin_idx) + '&api_key=' + API_KEY
     matchlist = requests.get(matchlist_api).json()['matches']
@@ -70,7 +82,7 @@ for match_idx in range(league_game // 100 + 1):
             count += 1
 
 # Generate league match data set
-for match_idx in range(league_game):
+for match_idx in tqdm(range(league_game), desc='시즌 데이터 셋 구축중...'):
     match_api = 'https://kr.api.riotgames.com/lol/match/v4/matches/' + str(league_match_id[match_idx]) + '?api_key=' + API_KEY
     match = requests.get(match_api).json()
 
@@ -78,6 +90,7 @@ for match_idx in range(league_game):
         game_duration = match['gameDuration']
         match_team_info = match['participants']
     except KeyError:
+        print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
         time.sleep(120)
         match = requests.get(match_api).json()
         game_duration = match['gameDuration']
@@ -105,7 +118,12 @@ for match_idx in range(league_game):
     league_match_data_row.append(league_match_champion[match_idx])
 
     # Win
-    if stat['win']:
+    if game_duration <= 300:
+        # Invalid matches
+        league_match_info_row.append('다시하기')
+        league_match_data_row.append(-1)
+        league_match_win.append(-1)
+    elif stat['win']:
         league_match_info_row.append('승리')
         league_match_data_row.append(1)
         league_match_win.append(1)
@@ -311,17 +329,19 @@ recent_match_data_df.to_csv('./data/recent_match_data.csv')
 league_match_champion_checker = {}
 
 for idx in range(len(league_match_champion)):
-    if league_match_champion[idx] in league_match_champion_checker:
-        league_match_champion_checker[league_match_champion[idx]][0] += 1
-        if league_match_win[idx] == 1:
-            league_match_champion_checker[league_match_champion[idx]][1] += 1
+    # If the match is valid
+    if league_match_win[idx] != -1:
+        if league_match_champion[idx] in league_match_champion_checker:
+            league_match_champion_checker[league_match_champion[idx]][0] += 1
+            if league_match_win[idx] == 1:
+                league_match_champion_checker[league_match_champion[idx]][1] += 1
+            else:
+                league_match_champion_checker[league_match_champion[idx]][2] += 1
         else:
-            league_match_champion_checker[league_match_champion[idx]][2] += 1
-    else:
-        if league_match_win[idx] == 1:
-            league_match_champion_checker[league_match_champion[idx]] = [1, 1, 0]
-        else:
-            league_match_champion_checker[league_match_champion[idx]] = [1, 0, 1]
+            if league_match_win[idx] == 1:
+                league_match_champion_checker[league_match_champion[idx]] = [1, 1, 0]
+            else:
+                league_match_champion_checker[league_match_champion[idx]] = [1, 0, 1]
 
 league_match_champion_sorted = sorted(league_match_champion_checker.items(), key=itemgetter(1), reverse=True)
 
@@ -329,18 +349,20 @@ league_match_champion_sorted = sorted(league_match_champion_checker.items(), key
 recent_match_champion_checker = {}
 
 for idx in range(len(recent_match_champion)):
-    if recent_match_champion[idx] in recent_match_champion_checker:
-        recent_match_champion_checker[recent_match_champion[idx]][0] += 1
-        if recent_match_win[idx] == 1:
-            recent_match_champion_checker[recent_match_champion[idx]][1] += 1
+    # If the match is valid
+    if recent_match_win[idx] != -1:
+        if recent_match_champion[idx] in recent_match_champion_checker:
+            recent_match_champion_checker[recent_match_champion[idx]][0] += 1
+            if recent_match_win[idx] == 1:
+                recent_match_champion_checker[recent_match_champion[idx]][1] += 1
+            else:
+                recent_match_champion_checker[recent_match_champion[idx]][2] += 1
         else:
-            recent_match_champion_checker[recent_match_champion[idx]][2] += 1
-    else:
-        recent_match_champion_checker[recent_match_champion[idx]] = [1, 0, 0]
-        if recent_match_win[idx] == 1:
-            recent_match_champion_checker[recent_match_champion[idx]][1] += 1
-        else:
-            recent_match_champion_checker[recent_match_champion[idx]][2] += 1
+            recent_match_champion_checker[recent_match_champion[idx]] = [1, 0, 0]
+            if recent_match_win[idx] == 1:
+                recent_match_champion_checker[recent_match_champion[idx]][1] += 1
+            else:
+                recent_match_champion_checker[recent_match_champion[idx]][2] += 1
 
 recent_match_champion_sorted = sorted(recent_match_champion_checker.items(), key=itemgetter(1), reverse=True)
 
