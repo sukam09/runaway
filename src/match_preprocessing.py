@@ -117,9 +117,15 @@ for match_idx in tqdm(range(league_game), desc='시즌 데이터 셋 구축중..
     # Win
     if game_duration <= 300:
         # Invalid matches
-        league_match_info_row.append('다시하기')
-        league_match_data_row.append(-1)
+        # league_match_info_row.append('다시하기')
+        # league_match_data_row.append(-1)
         league_match_win.append(-1)
+        
+        # For test
+        print('다시하기: %s' % league_match_id[match_idx])
+
+        # Go to next match
+        continue
     elif stat['win']:
         league_match_info_row.append('승리')
         league_match_data_row.append(1)
