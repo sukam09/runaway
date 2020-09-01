@@ -122,7 +122,7 @@ for match_idx in tqdm(range(league_game), desc='시즌 데이터 셋 구축중..
         league_match_win.append(-1)
         
         # For test
-        print('다시하기: %s' % league_match_id[match_idx])
+        # print('다시하기: %s' % league_match_id[match_idx])
 
         # Go to next match
         continue
