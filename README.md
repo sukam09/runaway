@@ -5,6 +5,7 @@
 ~~-The position of summoner spell has been changed a lot.(e.g., F flash to D flash, vice versa.)   ~~
 ~~-The position of active item(e.g., Stopwatch, Blade of the Ruined King, Youmuu's GhostBlade, Quicksilver Sash, Hextech Protobelt-01, etc.) has been changed highly.   ~~
 ~~-The player has won the game a lot with the champions not used frequently.  ~~
+
 ---
 The project topic has changed.
 
