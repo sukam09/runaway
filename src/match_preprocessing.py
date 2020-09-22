@@ -372,7 +372,7 @@ recent_match_champion_sorted = sorted(recent_match_champion_checker.items(), key
 
 # Results
 print('\n===================================')
-print('개인/2인 랭크 게임(%s시즌 전체)' % SEASON)
+print('%d시즌 솔로랭크(시즌 전체)' % SEASON)
 print('===================================')
 print('총 %s게임 %s승 %s패 승률 %.0f%%' % (league_game, league_win, league_loss, league_win_rate))
 print('-----------------------------------')
@@ -390,7 +390,7 @@ loss = recent_match_win.count(0)
 win_rate = win / game * 100
 
 print('\n===================================')
-print('개인/2인 랭크 게임(최근 %s게임)' % MATCHES)
+print('%d시즌 솔로랭크(최근 %d게임)' % (SEASON, MATCHES))
 print('===================================')
 print('총 %s게임 %s승 %s패 승률 %.0f%%' % (game, win, loss, win_rate))
 print('-----------------------------------')
