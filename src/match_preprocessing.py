@@ -15,7 +15,7 @@ API_KEY = api_key_file.read()
 MATCHES = 20
 SEASON = 2020
 
-print('Runaway')
+print('\nRunaway')
 print('(c) 2020 Seungwon Lee. All rights reserved.')
 print('리그 오브 레전드 닷지 추천 시스템 Runaway에 오신 것을 환영합니다.')
 
