@@ -50,6 +50,8 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
     league_game = league_win + league_loss
     league_win_rate = league_win / league_game * 100
 
+    print('소환사명: ')
+    
     # Count played champions
     count = 0
     for match_idx in tqdm(range(league_game // 100 + 1), desc='플레이한 챔피언 집계중...'):
