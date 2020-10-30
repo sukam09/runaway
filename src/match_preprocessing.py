@@ -19,21 +19,48 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
     summoner_api = 'https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + summoner_name + '?api_key=' + API_KEY
     summoner = requests.get(summoner_api).json()
 
-    try:
-        account_id = summoner['accountId']
-        summoner_id = summoner['id']
-    except KeyError:
-        print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-        time.sleep(120)
-        summoner = requests.get(summoner_api).json()
-        account_id = summoner['accountId']
-        summoner_id = summoner['id']
+    while True:
+        if 'status' not in summoner:
+            account_id = summoner['accountId']
+            summoner_id = summoner['id']
+            break
+        else:
+            print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+            time.sleep(120)
+            summoner = requests.get(summoner_api).json()
 
-    account_id = summoner['accountId']
-    summoner_id = summoner['id']
+    # while True:
+    #     try:
+    #         account_id = summoner['accountId']
+    #         summoner_id = summoner['id']
+    #         break
+    #     except KeyError:
+    #         print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+    #         time.sleep(120)
+
+    # try:
+    #     account_id = summoner['accountId']
+    #     summoner_id = summoner['id']
+    # except KeyError:
+    #     print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+    #     time.sleep(120)
+    #     summoner = requests.get(summoner_api).json()
+    #     account_id = summoner['accountId']
+    #     summoner_id = summoner['id']
+
+    # account_id = summoner['accountId']
+    # summoner_id = summoner['id']
 
     league_api = 'https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/' + summoner_id + '?api_key=' + API_KEY
     league = requests.get(league_api).json()
+
+    while True:
+        if 'status' not in league:
+            break
+        else:
+            print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+            time.sleep(120)
+            league = requests.get(league_api).json()
 
     # Calculate solo rank games, wins, losses, win rate
     if len(league) == 1:
@@ -50,14 +77,31 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
     league_game = league_win + league_loss
     league_win_rate = league_win / league_game * 100
 
-    print('소환사명: ')
+    # print('소환사명: ')
     
     # Count played champions
     count = 0
-    for match_idx in tqdm(range(league_game // 100 + 1), desc='플레이한 챔피언 집계중...'):
+    for match_idx in tqdm(range(league_game // 100 + 1), desc=summoner_name + '의 플레이한 챔피언 집계중...'):
         begin_idx = 100 * match_idx
         matchlist_api = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/' + account_id + '?queue=420&beginIndex=' + str(begin_idx) + '&api_key=' + API_KEY
         matchlist = requests.get(matchlist_api).json()['matches']
+
+        while True:
+            if 'status' not in matchlist:
+                break
+            else:
+                print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+                time.sleep(120)
+                matchlist = requests.get(matchlist_api).json()['matches']
+
+        # while True:
+        #     try:
+        #         matchlist = requests.get(matchlist_api).json()['matches']
+        #         break
+        #     except KeyError:
+        #         print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+        #         time.sleep(120)
+
         for matchlist_idx in range(100):
             if count >= league_game:
                 break
@@ -68,19 +112,38 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
 
     # Generate league match data set
     # for match_idx in tqdm(range(league_game), desc='시즌 데이터 셋 구축중...'):
-    for match_idx in tqdm(range(20), desc='시즌 데이터 셋 구축중...'):
+    for match_idx in tqdm(range(20), desc=summoner_name + '의 시즌 데이터 셋 구축중...'):
         match_api = 'https://kr.api.riotgames.com/lol/match/v4/matches/' + str(league_match_id[match_idx]) + '?api_key=' + API_KEY
         match = requests.get(match_api).json()
 
-        try:
-            game_duration = match['gameDuration']
-            match_team_info = match['participants']
-        except KeyError:
-            print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-            time.sleep(120)
-            match = requests.get(match_api).json()
-            game_duration = match['gameDuration']
-            match_team_info = match['participants']
+        while True:
+            if 'status' not in match:
+                game_duration = match['gameDuration']
+                match_team_info = match['participants']
+                break
+            else:
+                print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+                time.sleep(120)
+                match = requests.get(match_api).json()
+
+        # while True:
+        #     try:
+        #         game_duration = match['gameDuration']
+        #         match_team_info = match['participants']
+        #         break
+        #     except KeyError:
+        #         print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+        #         time.sleep(120)
+        
+        # try:
+        #     game_duration = match['gameDuration']
+        #     match_team_info = match['participants']
+        # except KeyError:
+        #     print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
+        #     time.sleep(120)
+        #     match = requests.get(match_api).json()
+        #     game_duration = match['gameDuration']
+        #     match_team_info = match['participants']
 
         # Check player's team
         for participant_idx in range(10):
@@ -204,55 +267,55 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
     recent_match_win = league_match_win[:MATCHES]
     recent_match_champion = league_match_champion[:MATCHES]
 
-    league_match_info_df = pd.DataFrame(league_match_info,
-        columns=[
-            '챔피언',
-            '게임 결과',
-            '게임 시간',
-            '소환사 주문1',
-            '소환사 주문2',
-            '메인 룬',
-            '보조 룬',
-            'KDA',
-            '평점',
-            '레벨',
-            'CS',
-            '분당 CS',
-            '킬관여',
-            '아이템1',
-            '아이템2',
-            '아이템3',
-            '아이템4',
-            '아이템5',
-            '아이템6'
-        ]
-    )
+    # league_match_info_df = pd.DataFrame(league_match_info,
+    #     columns=[
+    #         '챔피언',
+    #         '게임 결과',
+    #         '게임 시간',
+    #         '소환사 주문1',
+    #         '소환사 주문2',
+    #         '메인 룬',
+    #         '보조 룬',
+    #         'KDA',
+    #         '평점',
+    #         '레벨',
+    #         'CS',
+    #         '분당 CS',
+    #         '킬관여',
+    #         '아이템1',
+    #         '아이템2',
+    #         '아이템3',
+    #         '아이템4',
+    #         '아이템5',
+    #         '아이템6'
+    #     ]
+    # )
 
-    league_match_data_df = pd.DataFrame(league_match_data,
-        columns=[
-            'champion',
-            'win',
-            'time',
-            'spell1',
-            'spell2',
-            'rune1',
-            'rune2',
-            'kill',
-            'death',
-            'assist',
-            'kda',
-            'lv',
-            'cs',
-            'cspm',
-            'kp',
-            'item1',
-            'item2',
-            'item3',
-            'item4',
-            'item5',
-            'item6'
-        ]
-    )
+    # league_match_data_df = pd.DataFrame(league_match_data,
+    #     columns=[
+    #         'champion',
+    #         'win',
+    #         'time',
+    #         'spell1',
+    #         'spell2',
+    #         'rune1',
+    #         'rune2',
+    #         'kill',
+    #         'death',
+    #         'assist',
+    #         'kda',
+    #         'lv',
+    #         'cs',
+    #         'cspm',
+    #         'kp',
+    #         'item1',
+    #         'item2',
+    #         'item3',
+    #         'item4',
+    #         'item5',
+    #         'item6'
+    #     ]
+    # )
 
     recent_match_info_df = pd.DataFrame(recent_match_info,
         columns=[
