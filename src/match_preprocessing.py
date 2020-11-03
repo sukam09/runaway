@@ -25,31 +25,9 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
             summoner_id = summoner['id']
             break
         else:
-            print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-            time.sleep(120)
+            for sec in tqdm(range(120), desc='API 요청 제한 횟수를 초과하여 대기 중입니다'):
+                time.sleep(1)
             summoner = requests.get(summoner_api).json()
-
-    # while True:
-    #     try:
-    #         account_id = summoner['accountId']
-    #         summoner_id = summoner['id']
-    #         break
-    #     except KeyError:
-    #         print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-    #         time.sleep(120)
-
-    # try:
-    #     account_id = summoner['accountId']
-    #     summoner_id = summoner['id']
-    # except KeyError:
-    #     print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-    #     time.sleep(120)
-    #     summoner = requests.get(summoner_api).json()
-    #     account_id = summoner['accountId']
-    #     summoner_id = summoner['id']
-
-    # account_id = summoner['accountId']
-    # summoner_id = summoner['id']
 
     league_api = 'https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/' + summoner_id + '?api_key=' + API_KEY
     league = requests.get(league_api).json()
@@ -58,8 +36,8 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
         if 'status' not in league:
             break
         else:
-            print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-            time.sleep(120)
+            for sec in tqdm(range(120), desc='API 요청 제한 횟수 초과로 인한 대기중'):
+                time.sleep(1)
             league = requests.get(league_api).json()
 
     # Calculate solo rank games, wins, losses, win rate
@@ -76,12 +54,10 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
 
     league_game = league_win + league_loss
     league_win_rate = league_win / league_game * 100
-
-    # print('소환사명: ')
     
     # Count played champions
     count = 0
-    for match_idx in tqdm(range(league_game // 100 + 1), desc=summoner_name + '의 플레이한 챔피언 집계중...'):
+    for match_idx in tqdm(range(league_game // 100 + 1), desc=summoner_name + '의 플레이한 챔피언 집계중'):
         begin_idx = 100 * match_idx
         matchlist_api = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/' + account_id + '?queue=420&beginIndex=' + str(begin_idx) + '&api_key=' + API_KEY
         matchlist = requests.get(matchlist_api).json()['matches']
@@ -90,17 +66,11 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
             if 'status' not in matchlist:
                 break
             else:
-                print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-                time.sleep(120)
+                # print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다')
+                # time.sleep(120)
+                for sec in tqdm(range(120), desc='API 요청 제한 횟수 초과로 인한 대기중'):
+                    time.sleep(1)
                 matchlist = requests.get(matchlist_api).json()['matches']
-
-        # while True:
-        #     try:
-        #         matchlist = requests.get(matchlist_api).json()['matches']
-        #         break
-        #     except KeyError:
-        #         print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-        #         time.sleep(120)
 
         for matchlist_idx in range(100):
             if count >= league_game:
@@ -111,8 +81,7 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
                 count += 1
 
     # Generate league match data set
-    # for match_idx in tqdm(range(league_game), desc='시즌 데이터 셋 구축중...'):
-    for match_idx in tqdm(range(20), desc=summoner_name + '의 시즌 데이터 셋 구축중...'):
+    for match_idx in tqdm(range(20), desc=summoner_name + '의 시즌 데이터 셋 구축중'):
         match_api = 'https://kr.api.riotgames.com/lol/match/v4/matches/' + str(league_match_id[match_idx]) + '?api_key=' + API_KEY
         match = requests.get(match_api).json()
 
@@ -122,28 +91,9 @@ def match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, i
                 match_team_info = match['participants']
                 break
             else:
-                print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-                time.sleep(120)
+                for sec in tqdm(range(120), desc='API 요청 제한 횟수 초과로 인한 대기중'):
+                    time.sleep(1)
                 match = requests.get(match_api).json()
-
-        # while True:
-        #     try:
-        #         game_duration = match['gameDuration']
-        #         match_team_info = match['participants']
-        #         break
-        #     except KeyError:
-        #         print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-        #         time.sleep(120)
-        
-        # try:
-        #     game_duration = match['gameDuration']
-        #     match_team_info = match['participants']
-        # except KeyError:
-        #     print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다...')
-        #     time.sleep(120)
-        #     match = requests.get(match_api).json()
-        #     game_duration = match['gameDuration']
-        #     match_team_info = match['participants']
 
         # Check player's team
         for participant_idx in range(10):
@@ -464,8 +414,10 @@ print('League of Legends Queue Dodging Recommendation System using Win-Loss Pred
 print('\n(c) 2020 Lee Seung Won. All rights reserved.')
 
 # Parsing summoner names from in-game chat
-participant_list = parsing.parsing()
+participant_list = parsing.parsing(API_KEY)
 for summoner_idx in range(5):
     summoner_name = participant_list[summoner_idx]
     print()
     match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, item, rune)
+
+print('Done')
