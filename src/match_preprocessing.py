@@ -68,8 +68,6 @@ def match_preprocessing(API_KEY, summoner_name, summoner_idx, summoner_spell, ch
             if 'status' not in matchlist:
                 break
             else:
-                # print('\nAPI 요청 제한 횟수를 초과하여 대기 중입니다')
-                # time.sleep(120)
                 for sec in tqdm(range(120), desc='API 요청 제한 횟수 초과로 인한 대기중'):
                     time.sleep(1)
                 matchlist = requests.get(matchlist_api).json()['matches']
@@ -401,25 +399,3 @@ def match_preprocessing(API_KEY, summoner_name, summoner_idx, summoner_spell, ch
 
     print('-----------------------------------')
     print('%s' % recent_match_info_df)
-
-# API key
-# api_key_file = open('../api_key.txt', 'r')
-# API_KEY = api_key_file.read()
-
-# Number of recent matches (Default: 20)
-# MATCHES = 20
-# SEASON = 2020
-
-# print('\nRunaway')
-# print('\n리그 오브 레전드 승패 예측을 이용한 닷지 추천 시스템')
-# print('League of Legends Queue Dodging Recommendation System using Win-Loss Prediction')
-# print('\n(c) 2020 Lee Seung Won. All rights reserved.')
-
-# Parsing summoner names from in-game chat
-# participant_list = parsing.parsing(API_KEY)
-# for summoner_idx in range(5):
-#     summoner_name = participant_list[summoner_idx]
-#     print()
-#     match_preprocessing(summoner_name, summoner_idx, summoner_spell, champion, item, rune)
-
-# print('Done')
