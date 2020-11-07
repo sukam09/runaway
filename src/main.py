@@ -12,7 +12,7 @@ MATCHES = 20
 SEASON = 2020
 
 
-print('\nRunaway')
+print('\nRunaway\n')
 print('리그 오브 레전드 승패 예측을 이용한 닷지 추천 시스템')
 print('League of Legends Queue Dodging Recommendation System using Win-Loss Prediction')
 print('(c) 2020 Lee Seung Won. All rights reserved.')
