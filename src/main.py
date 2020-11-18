@@ -5,7 +5,7 @@ from match_preprocessing import match_preprocessing
 
 def main():
     # API key
-    api_key_file = open('../api_key.txt', 'r')
+    api_key_file = open('../../api_key.txt', 'r')
     API_KEY = api_key_file.read()
 
     # Number of recent matches (Default: 20)

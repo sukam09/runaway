@@ -195,12 +195,16 @@ def match_preprocessing(API_KEY, summoner_name, summoner_idx, summoner_spell, ch
         league_match_data_row.append('%.0f' % kp)
 
         # Items
-        league_match_info_row.append(item[stat['item0']])
-        league_match_info_row.append(item[stat['item1']])
-        league_match_info_row.append(item[stat['item2']])
-        league_match_info_row.append(item[stat['item3']])
-        league_match_info_row.append(item[stat['item4']])
-        league_match_info_row.append(item[stat['item5']])
+        # Currently not using item name due to preseason patch
+        # league_match_info_row.append(item[stat['item0']])
+        # league_match_info_row.append(item[stat['item1']])
+        # league_match_info_row.append(item[stat['item2']])
+        # league_match_info_row.append(item[stat['item3']])
+        # league_match_info_row.append(item[stat['item4']])
+        # league_match_info_row.append(item[stat['item5']])
+
+        league_match_info_row.extend([stat['item0'], stat['item1'], stat['item2'],
+                                        stat['item3'], stat['item4'], stat['item5']])
         league_match_data_row.append(stat['item0'])
         league_match_data_row.append(stat['item1'])
         league_match_data_row.append(stat['item2'])
@@ -319,10 +323,10 @@ def match_preprocessing(API_KEY, summoner_name, summoner_idx, summoner_spell, ch
 
     # Save to csv files
     file_num = summoner_idx + 1
-    # league_match_info_df.to_csv('./data/league_match_info_' + str(file_num) + '.csv')
-    # league_match_data_df.to_csv('./data/league_match_data_' + str(file_num) + '.csv')
-    recent_match_info_df.to_csv('./data/recent_match_info_' + str(file_num) + '.csv')
-    recent_match_data_df.to_csv('./data/recent_match_data_' + str(file_num) + '.csv')
+    # league_match_info_df.to_csv('../data/league_match_info_' + str(file_num) + '.csv')
+    # league_match_data_df.to_csv('../data/league_match_data_' + str(file_num) + '.csv')
+    recent_match_info_df.to_csv('../data/recent_match_info_' + str(file_num) + '.csv')
+    recent_match_data_df.to_csv('../data/recent_match_data_' + str(file_num) + '.csv')
 
     # Count league match champions
     # league_match_champion_checker = {}
