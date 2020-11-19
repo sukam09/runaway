@@ -1,9 +1,10 @@
 from data_set import summoner_spell, champion, item, rune
 from parsing import parsing
 from match_preprocessing import match_preprocessing
+from win_prediction import win_prediction
 
 
-def main():
+def runaway():
     # API key
     api_key_file = open('../../api_key.txt', 'r')
     API_KEY = api_key_file.read()
@@ -27,5 +28,9 @@ def main():
 
     print('\n모든 소환사의 전적 전처리가 완료되었습니다.')
 
+    # ML part
+    # win_prediction()
+
+
 if __name__ == '__main__':
-    main()
+    runaway()

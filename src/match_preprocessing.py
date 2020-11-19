@@ -204,7 +204,7 @@ def match_preprocessing(API_KEY, summoner_name, summoner_idx, summoner_spell, ch
         # league_match_info_row.append(item[stat['item5']])
 
         league_match_info_row.extend([stat['item0'], stat['item1'], stat['item2'],
-                                        stat['item3'], stat['item4'], stat['item5']])
+                                    stat['item3'], stat['item4'], stat['item5']])
         league_match_data_row.append(stat['item0'])
         league_match_data_row.append(stat['item1'])
         league_match_data_row.append(stat['item2'])
@@ -388,11 +388,11 @@ def match_preprocessing(API_KEY, summoner_name, summoner_idx, summoner_spell, ch
     loss = recent_match_win.count(0)
     win_rate = win / game * 100
 
-    print('===================================')
+    print('=' * 100)
     print('%d시즌 솔로랭크(최근 %d게임)' % (SEASON, MATCHES))
-    print('===================================')
+    print('=' * 100)
     print('총 %s게임 %s승 %s패 승률 %.0f%%' % (game, win, loss, win_rate))
-    print('-----------------------------------')
+    print('-' * 100)
 
     for item in recent_match_champion_sorted:
         game = item[1][0]
@@ -401,5 +401,5 @@ def match_preprocessing(API_KEY, summoner_name, summoner_idx, summoner_spell, ch
         win_rate = win / game * 100
         print('%s %d게임 %d승 %d패 승률 %.0f%%' % (champion[item[0]], game, win, loss, win_rate))
 
-    print('-----------------------------------')
+    print('-' * 100)
     print('%s' % recent_match_info_df)

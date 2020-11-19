@@ -166,6 +166,7 @@ champion = {
     876: '릴리아'
 }
 
+# Currently not using
 item = {
     0: '-',
     1001: '속도의 장화',
