@@ -40,7 +40,6 @@ def win_prediction():
     y = np.zeros((len(recent_match_data_labels), 2))
     for idx in range(len(recent_match_data_labels)):
         y[idx][recent_match_data_labels[idx]] = 1
-    print(y)
 
     # 0~1 scaling
     x = minmax_scale(x, axis=0, copy=True)
@@ -67,7 +66,7 @@ def win_prediction():
         epochs=100,
         validation_data=(x_valid, y_valid),
         batch_size=1,
-        verbose=0
+        verbose=1
     )
 
     # Evaluate and predict
@@ -75,13 +74,17 @@ def win_prediction():
         x_test,
         y_test,
         batch_size=1,
-        verbose=0
+        verbose=1
     )
     y_pred = recent_match_data_model.predict(x_test)
     print('\n' + '=' * 100 + '\n승패 예측 결과\n' + '=' * 100)
     for i in range(len(y_pred)):
-        print(np.argmax(y_pred[i]))
+        # print(np.argmax(y_pred[i]))
+        if np.argmax(y_pred[i]) == 1:
+            print('승리')
+        else:
+            print('패배')
 
 
 # For debug
-win_prediction()
+# win_prediction()

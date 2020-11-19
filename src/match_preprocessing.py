@@ -368,7 +368,7 @@ def match_preprocessing(API_KEY, summoner_name, summoner_idx, summoner_spell, ch
     recent_match_champion_sorted = sorted(recent_match_champion_checker.items(), key=itemgetter(1), reverse=True)
 
     # Results
-    print('=' * 35)
+    print('=' * 100)
     print(summoner_name)
     # print('\n===================================')
     # print('%d시즌 솔로랭크(시즌 전체)' % SEASON)
