@@ -1,5 +1,6 @@
-from dataset import summoner_spell, champion, rune
+from datasets import summoner_spell, champion, rune
 
+import numpy as np
 import pandas as pd
 import requests
 from tqdm import tqdm
@@ -16,12 +17,11 @@ class RunawayAgent():
         print('\nRunaway\n')
         print('리그 오브 레전드 승패 예측을 이용한 닷지 추천 시스템')
         print('League of Legends Queue Dodging Recommendation System using Win-Loss Prediction')
-        print('(c) 2020 Lee Seung Won. All rights reserved.')
+        print('Copyright 2020 Lee Seung Won. All Rights Reserved.')
     
     def run(self):
         self.participant_list = self.parsing()  # Parse summoner names from in-game chat
-        for i in range(5):
-            summoner_name = self.participant_list[i]
+        for i, summoner_name in enumerate(self.participant_list):
             print()
             self.match_preprocessing(summoner_name, i)
         print('\n모든 소환사의 전적 전처리가 완료되었습니다.\n')
@@ -38,17 +38,16 @@ class RunawayAgent():
                     break
         
             participant_list = []
-            for i in range(len(banpick_chat)):
-                banpick_chat[i] = banpick_chat[i].split('님이 로비에 참가하셨습니다.')
-                if len(banpick_chat[i]) > 1:
-                    summoner_name = banpick_chat[i][0]
+            for _, chat in enumerate(banpick_chat):
+                chat = chat.split('님이 로비에 참가하셨습니다.')
+                if len(chat) > 1:
+                    summoner_name = chat[0]
                     summoner_api = 'https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + summoner_name + '?api_key=' + self.api_key
                     summoner = requests.get(summoner_api).json()
                     if 'status' not in summoner:
-                        participant_list.append(banpick_chat[i][0])
+                        participant_list.append(chat[0])
                     elif summoner['status']['status_code'] == 404:
-                        print('존재하지 않는 소환사명:', summoner_name)
-                        continue
+                        print('존재하지 않는 소환사명: %s' % summoner_name)
                     else:
                         pass  # Deprecated
 
@@ -110,25 +109,26 @@ class RunawayAgent():
         for i in tqdm(range(league_game // 100 + 1), desc=summoner_name + '의 플레이한 챔피언 집계중'):
             begin_idx = 100 * i
             matchlist_api = 'https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/' + account_id + '?queue=420&beginIndex=' + str(begin_idx) + '&api_key=' + self.api_key
-            matchlist = requests.get(matchlist_api).json()['matches']
+            matchlist = requests.get(matchlist_api).json()
 
             while True:
                 if 'status' not in matchlist:
+                    matchlist = matchlist['matches']
                     break
                 else:
                     for _ in tqdm(range(120), desc='API 요청 제한 횟수 초과로 인한 대기중'):
                         time.sleep(1)
-                    matchlist = requests.get(matchlist_api).json()['matches']
+                    matchlist = requests.get(matchlist_api).json()
 
-            for j in range(100):
+            for j, match in enumerate(matchlist):
                 if count >= league_game:
                     break
                 else:
-                    league_match_id.append(matchlist[j]['gameId'])
-                    league_match_champion.append(matchlist[j]['champion'])
+                    league_match_id.append(match['gameId'])
+                    league_match_champion.append(match['champion'])
                     count += 1
 
-        # Generate league match data set
+        # Generate league match datasets
         for i in tqdm(range(20), desc=summoner_name + '의 시즌 데이터 셋 구축중'):
             match_api = 'https://kr.api.riotgames.com/lol/match/v4/matches/' + str(league_match_id[i]) + '?api_key=' + self.api_key
             match = requests.get(match_api).json()
@@ -144,9 +144,8 @@ class RunawayAgent():
                     match = requests.get(match_api).json()
 
             # Check player's team
-            for j in range(10):
-                if match_team_info[j]['championId'] == league_match_champion[i]:
-                    match_info = match_team_info[j]
+            for j, match_info in enumerate(match_team_info):
+                if match_info['championId'] == league_match_champion[i]:
                     if j < 5:
                         team = 'blue'
                     else:
@@ -182,16 +181,12 @@ class RunawayAgent():
             league_match_data_row.append(game_duration)
 
             # Summoner spell
-            league_match_info_row.append(summoner_spell[spell1])
-            league_match_info_row.append(summoner_spell[spell2])
-            league_match_data_row.append(spell1)
-            league_match_data_row.append(spell2)
+            league_match_info_row.extend([summoner_spell[spell1], summoner_spell[spell2]])
+            league_match_data_row.extend([spell1, spell2])
 
             # Runes
-            league_match_info_row.append(rune[stat['perk0']])
-            league_match_info_row.append(rune[stat['perkSubStyle']])
-            league_match_data_row.append(stat['perk0'])
-            league_match_data_row.append(stat['perkSubStyle'])
+            league_match_info_row.extend([rune[stat['perk0']], rune[stat['perkSubStyle']]])
+            league_match_data_row.extend([stat['perk0'], stat['perkSubStyle']])
 
             # KDA
             kill = int(stat['kills'])
@@ -199,9 +194,7 @@ class RunawayAgent():
             assist = int(stat['assists'])
 
             league_match_info_row.append('%d/%d/%d' % (kill, death, assist))
-            league_match_data_row.append(kill)
-            league_match_data_row.append(death)
-            league_match_data_row.append(assist)
+            league_match_data_row.extend([kill, death, assist])
 
             if death == 0:
                 kda = (kill + assist) * 1.2
@@ -217,21 +210,17 @@ class RunawayAgent():
             cs = int(stat['totalMinionsKilled'])
             cspm = cs / (game_duration / 60)
 
-            league_match_info_row.append(level)
-            league_match_info_row.append(cs)
-            league_match_info_row.append('%.1f' % cspm)
-            league_match_data_row.append(level)
-            league_match_data_row.append(cs)
-            league_match_data_row.append('%.1f' % cspm)
+            league_match_info_row.extend([level, cs, '%.1f' % cspm])
+            league_match_data_row.extend([level, cs, '%.1f' % cspm])
 
             # Kill participation
             team_score = 0
             if team == 'blue':
-                for idx in range(5):
-                    team_score += match_team_info[idx]['stats']['kills']
+                for j in range(5):
+                    team_score += match_team_info[j]['stats']['kills']
             else:
-                for idx in range(5, 10):
-                    team_score += match_team_info[idx]['stats']['kills']
+                for j in range(5, 10):
+                    team_score += match_team_info[j]['stats']['kills']
             
             if team_score == 0:
                 kp = 0
@@ -243,19 +232,10 @@ class RunawayAgent():
 
             # Items
             # Currently not using item name due to preseason patch
-            league_match_info_row.append(stat['item0'])
-            league_match_info_row.append(stat['item1'])
-            league_match_info_row.append(stat['item2'])
-            league_match_info_row.append(stat['item3'])
-            league_match_info_row.append(stat['item4'])
-            league_match_info_row.append(stat['item5'])
-
-            league_match_data_row.append(stat['item0'])
-            league_match_data_row.append(stat['item1'])
-            league_match_data_row.append(stat['item2'])
-            league_match_data_row.append(stat['item3'])
-            league_match_data_row.append(stat['item4'])
-            league_match_data_row.append(stat['item5'])
+            league_match_info_row.extend([stat['item0'], stat['item1'], stat['item2'],
+                                        stat['item3'], stat['item4'], stat['item5']])
+            league_match_data_row.extend([stat['item0'], stat['item1'], stat['item2'],
+                                        stat['item3'], stat['item4'], stat['item5']])
 
             # Compelete preprocessing for one match
             league_match_info.append(league_match_info_row)
@@ -267,7 +247,7 @@ class RunawayAgent():
         recent_match_win = league_match_win[:20]
         recent_match_champion = league_match_champion[:20]
 
-        recent_match_info_df = pd.DataFrame(recent_match_info,
+        recent_match_info_df = pd.DataFrame(recent_match_info, 
             columns=[
                 '챔피언',
                 '게임 결과',
@@ -290,6 +270,7 @@ class RunawayAgent():
                 '아이템6'
             ]
         )
+        recent_match_info_df.index = [i + 1 for i in range(len(recent_match_info_df.index))]
 
         recent_match_data_df = pd.DataFrame(recent_match_data,
             columns=[
@@ -324,21 +305,21 @@ class RunawayAgent():
 
         # Count recent match champions
         recent_match_champion_checker = {}
-        for i in range(len(recent_match_champion)):
+        for i, recent_champion in enumerate(recent_match_champion):
             # If the match is valid
             if recent_match_win[i] != -1:
-                if recent_match_champion[i] in recent_match_champion_checker:
-                    recent_match_champion_checker[recent_match_champion[i]][0] += 1
+                if recent_match_win[i] in recent_match_champion_checker:
+                    recent_match_champion_checker[recent_champion][0] += 1
                     if recent_match_win[i] == 1:
-                        recent_match_champion_checker[recent_match_champion[i]][1] += 1
+                        recent_match_champion_checker[recent_champion][1] += 1
                     else:
-                        recent_match_champion_checker[recent_match_champion[i]][2] += 1
+                        recent_match_champion_checker[recent_champion][2] += 1
                 else:
-                    recent_match_champion_checker[recent_match_champion[i]] = [1, 0, 0]
+                    recent_match_champion_checker[recent_champion] = [1, 0, 0]
                     if recent_match_win[i] == 1:
-                        recent_match_champion_checker[recent_match_champion[i]][1] += 1
+                        recent_match_champion_checker[recent_champion][1] += 1
                     else:
-                        recent_match_champion_checker[recent_match_champion[i]][2] += 1
+                        recent_match_champion_checker[recent_champion][2] += 1
         recent_match_champion_sorted = sorted(recent_match_champion_checker.items(), key=itemgetter(1), reverse=True)
 
         # Results
@@ -354,7 +335,7 @@ class RunawayAgent():
         print('=' * 100)
         print('%d시즌 솔로랭크(최근 %d게임)' % (2020, 20))
         print('=' * 100)
-        print('총 %s게임 %s승 %s패 승률 %.0f%%' % (game, win, loss, win_rate))
+        print('총 %d게임 %d승 %d패 승률 %.0f%%' % (game, win, loss, win_rate))
         print('-' * 100)
 
         for item in recent_match_champion_sorted:
@@ -365,7 +346,7 @@ class RunawayAgent():
             print('%s %d게임 %d승 %d패 승률 %.0f%%' % (champion[item[0]], game, win, loss, win_rate))
 
         print('-' * 100)
-        print('%s' % recent_match_info_df)
+        print(recent_match_info_df)
     
     def win_prediction(self):
         # ML part
