@@ -20,13 +20,13 @@ class RunawayAgent():
         print('Copyright 2020 Lee Seung Won. All Rights Reserved.')
     
     def run(self):
-        self.participant_list = self.parsing()  # Parse summoner names from in-game chat
+        self.participant_list = self.parse()  # Parse summoner names from in-game chat
         for i, summoner_name in enumerate(self.participant_list):
             print()
             self.match_preprocess(summoner_name, i)
         print('\n모든 소환사의 전적 전처리가 완료되었습니다.\n')
 
-    def parsing(self):
+    def parse(self):
         print('\n아군 팀원의 소환사명이 나타난 채팅을 복사 및 붙여넣기 해주세요. 전적 사이트에서 멀티서치를 하는 방법과 동일합니다.\n')
         while True:
             banpick_chat = []
