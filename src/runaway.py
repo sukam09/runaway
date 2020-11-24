@@ -20,11 +20,11 @@ class RunawayAgent():
     
     def run(self):
         self.participant_list = self.parsing()  # Parse summoner names from in-game chat
-        for summoner_idx in range(5):
-            summoner_name = self.participant_list[summoner_idx]
+        for i in range(5):
+            summoner_name = self.participant_list[i]
             print()
-            self.match_preprocessing(summoner_name, summoner_idx)
-        print('\n모든 소환사의 전적 전처리가 완료되었습니다.')
+            self.match_preprocessing(summoner_name, i)
+        print('\n모든 소환사의 전적 전처리가 완료되었습니다.\n')
 
     def parsing(self):
         print('\n아군 팀원의 소환사명이 나타난 채팅을 복사 및 붙여넣기 해주세요. 전적 사이트에서 멀티서치를 하는 방법과 동일합니다.\n')
@@ -342,6 +342,7 @@ class RunawayAgent():
         recent_match_champion_sorted = sorted(recent_match_champion_checker.items(), key=itemgetter(1), reverse=True)
 
         # Results
+        print()
         print('=' * 100)
         print(summoner_name)
 
