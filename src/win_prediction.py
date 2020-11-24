@@ -39,7 +39,7 @@ def win_prediction():
     x = recent_match_data_features
     y = np.zeros((len(recent_match_data_labels), 2))
     for idx in range(len(recent_match_data_labels)):
-        y[idx][recent_match_data_labels[idx]] = 1
+        y[idx][recent_match_data_labels[idx]] = 1  # Convert to one-hot vector
 
     # 0~1 scaling
     x = minmax_scale(x, axis=0, copy=True)
@@ -51,7 +51,8 @@ def win_prediction():
     recent_match_data_model = tf.keras.Sequential([
         layers.Dense(64, activation='relu'),
         layers.Dense(32, activation='relu'),
-        layers.Dense(2)
+        # layers.Dense(2, activation='softmax')
+        layers.Dense(2, activation='sigmoid')
     ])
 
     # Train
@@ -60,6 +61,7 @@ def win_prediction():
         optimizer=tf.optimizers.Adam(),
         metrics=['accuracy'],
     )
+
     recent_match_data_model.fit(
         x_train,
         y_train,
@@ -77,6 +79,7 @@ def win_prediction():
         verbose=1
     )
     y_pred = recent_match_data_model.predict(x_test)
+
     print('\n' + '=' * 100 + '\n승패 예측 결과\n' + '=' * 100)
     for i in range(len(y_pred)):
         # print(np.argmax(y_pred[i]))
@@ -87,4 +90,4 @@ def win_prediction():
 
 
 # For debug
-# win_prediction()
+win_prediction()
