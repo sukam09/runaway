@@ -23,7 +23,7 @@ class RunawayAgent():
         self.participant_list = self.parsing()  # Parse summoner names from in-game chat
         for i, summoner_name in enumerate(self.participant_list):
             print()
-            self.match_preprocessing(summoner_name, i)
+            self.match_preprocess(summoner_name, i)
         print('\n모든 소환사의 전적 전처리가 완료되었습니다.\n')
 
     def parsing(self):
@@ -59,7 +59,7 @@ class RunawayAgent():
             else:
                 print('모든 아군 팀원의 소환사명이 입력되지 않았습니다. 다시 입력해 주세요.\n')
     
-    def match_preprocessing(self, summoner_name, summoner_idx):
+    def match_preprocess(self, summoner_name, summoner_idx):
         # League match data structure
         league_match_id = []
         league_match_champion = []
